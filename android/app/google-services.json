@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "408075613759",
+    "project_id": "gudangin-35213",
+    "storage_bucket": "gudangin-35213.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:408075613759:android:c49945654699b8209eaa8a",
+        "android_client_info": {
+          "package_name": "com.example.gudangin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDG7PGfqdIqVP4EcbZ4Si03m2XG-HLGUlo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
