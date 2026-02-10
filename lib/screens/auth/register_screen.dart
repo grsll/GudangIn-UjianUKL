@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/auth_service.dart';
+import '../../models/user_model.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -44,10 +46,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       // 2. Memanggil Firebase Auth untuk membuat user baru
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      final userCred = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
+
+      final user = userCred.user;
+      if (user != null) {
+        // 2a. Simpan profil user ke Firestore dengan role yang dipilih
+        final authService = AuthService();
+        await authService.saveUserProfile(
+          UserModel(
+            uid: user.uid,
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            role: _selectedRole, // Menggunakan role dari dropdown
+            createdAt: DateTime.now(),
+          ),
+        );
+      }
 
       // 3. Menghadapi notifikasi berhasil
       if (context.mounted) {

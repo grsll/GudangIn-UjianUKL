@@ -6,7 +6,6 @@ class ItemModel {
   final String namaBarang;
   final String kategori;
   final int jumlahStok;
-  final double harga;
   final DateTime tanggalMasuk;
   final String? deskripsi;
   final DateTime createdAt;
@@ -18,7 +17,6 @@ class ItemModel {
     required this.namaBarang,
     required this.kategori,
     required this.jumlahStok,
-    required this.harga,
     required this.tanggalMasuk,
     this.deskripsi,
     required this.createdAt,
@@ -32,7 +30,6 @@ class ItemModel {
       namaBarang: data['namaBarang'] ?? '',
       kategori: data['kategori'] ?? '',
       jumlahStok: data['jumlahStok'] ?? 0,
-      harga: (data['harga'] ?? 0).toDouble(),
       tanggalMasuk: (data['tanggalMasuk'] as Timestamp).toDate(),
       deskripsi: data['deskripsi'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
@@ -46,7 +43,6 @@ class ItemModel {
       'namaBarang': namaBarang,
       'kategori': kategori,
       'jumlahStok': jumlahStok,
-      'harga': harga,
       'tanggalMasuk': tanggalMasuk,
       'deskripsi': deskripsi,
       'createdAt': createdAt,

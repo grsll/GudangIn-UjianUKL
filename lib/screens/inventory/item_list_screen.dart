@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/item_model.dart';
 import '../../providers/inventory_provider.dart';
-import '../../providers/auth_provider.dart';
 import 'item_detail_screen.dart';
 import 'item_form_screen.dart';
 import '../../utils/currency_formatter.dart'; // Need to create this
@@ -15,29 +14,7 @@ class ItemListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Daftar Barang'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await Provider.of<AuthProvider>(context, listen: false).signOut();
-              // AuthProvider listener will handle navigation to Login
-              // But we might need to manually pop if the listener logic isn't effectively popping all
-              // Typically the wrapper (Splash or Main) handles "Home" property switching.
-              // For now, let's assume Main.home or Splash handles it.
-              // Actually, main.dart uses const Splash().
-              // We need a better root widget that listens to auth.
-              // For now, let's explicit push to Login on Splash or Main
-
-              if (!context.mounted) return;
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil('/', (route) => false);
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Gudangin')),
       body: Consumer<InventoryProvider>(
         builder: (context, inventory, child) {
           return StreamBuilder<List<ItemModel>>(

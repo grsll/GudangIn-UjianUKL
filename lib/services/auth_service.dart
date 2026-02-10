@@ -1,9 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
+import '../models/user_model.dart';
+
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // 🔐 Login Email & Password
   Future<User?> signInWithEmail(String email, String password) async {
@@ -37,8 +42,100 @@ class AuthService {
   // 📌 Ambil user saat ini
   User? get currentUser => _auth.currentUser;
 
+  // 👤 Ambil role user dari Firestore
+  Future<String?> getUserRole(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return (doc.data() as Map<String, dynamic>)['role'];
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting user role: $e');
+      return null;
+    }
+  }
+
+  // 📝 Simpan profil user ke Firestore
+  Future<void> saveUserProfile(UserModel user) async {
+    try {
+      await _firestore.collection('users').doc(user.uid).set(user.toMap());
+    } catch (e) {
+      debugPrint('Error saving user profile: $e');
+      rethrow;
+    }
+  }
+
   // 🛰 Get Auth State Changes (Added for Provider)
   Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  // 👑 Admin Create User (Secondary App)
+  Future<void> createUserByAdmin(
+    String email,
+    String password,
+    String name, {
+    String role = 'user',
+  }) async {
+    FirebaseApp? secondaryApp;
+    try {
+      // Initialize secondary app to avoid affecting current auth state
+      secondaryApp = await Firebase.initializeApp(
+        name: 'secondaryApp',
+        options: Firebase.app().options,
+      );
+
+      final secondaryAuth = FirebaseAuth.instanceFor(app: secondaryApp);
+
+      // Create the user
+      final userCredential = await secondaryAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final uid = userCredential.user!.uid;
+
+      // Save user data to Firestore
+      await _firestore.collection('users').doc(uid).set({
+        'uid': uid,
+        'email': email,
+        'name': name,
+        'role': role,
+        'createdAt': DateTime.now(),
+      });
+    } catch (e) {
+      debugPrint('Error creating user by admin: $e');
+      rethrow;
+    } finally {
+      // Clean up the secondary app
+      if (secondaryApp != null) {
+        await secondaryApp.delete();
+      }
+    }
+  }
+
+  // 🛡 Ensure Default Admin exists
+  Future<void> ensureDefaultAdmin() async {
+    try {
+      // Check if any admin exists or specifically our default
+      final query = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: 'admin@gudang.in')
+          .limit(1)
+          .get();
+
+      if (query.docs.isEmpty) {
+        debugPrint('Admin account not found, creating default admin...');
+        await createUserByAdmin(
+          'admin@gudang.in',
+          'admin123',
+          'Super Admin',
+          role: 'admin',
+        );
+      }
+    } catch (e) {
+      debugPrint('Error ensuring default admin: $e');
+    }
+  }
 }
 
 class LoginController {

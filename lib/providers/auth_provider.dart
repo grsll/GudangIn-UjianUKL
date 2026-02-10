@@ -29,23 +29,34 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _fetchUserData(String uid) async {
     try {
-      // getUserRole is removed in simplified AuthService
-      // await _authService.getUserRole(uid);
-      // In a real app, we might want to listen to the user doc stream
-      // For now, we just fetch the role to determine dashboard
-      // Ideally we fetch the whole user model
-      // Re-using signIn logic essentially or adding a explicit fetch method in service
-      // Let's rely on what we have or improve AuthService to fetch full model by ID.
-      // For simplicity/robustness, let's just assume simple fetching
-      // Wait, AuthService.getUserRole fetches role.
-      // Let's add a fetch user method to AuthService or just access firestore here?
-      // Better to stick to Service pattern.
-      // Since AuthService.signIn returns UserModel, let's use that on login.
-      // But for auto-login (authStateChanges), we need to fetch it.
-
-      // We will simple reload the user model if we have a user
+      final role = await _authService.getUserRole(uid);
+      if (role != null) {
+        // If we have an existing model, update it, otherwise create new
+        if (_userModel != null) {
+          _userModel = UserModel(
+            uid: _userModel!.uid,
+            email: _userModel!.email,
+            name: _userModel!.name,
+            role: role,
+            createdAt: _userModel!.createdAt,
+          );
+        } else {
+          // Need basic info if model is null, try getting from auth service current user if matches
+          final currentUser = _authService.currentUser;
+          if (currentUser != null && currentUser.uid == uid) {
+            _userModel = UserModel(
+              uid: uid,
+              email: currentUser.email ?? '',
+              name: currentUser.displayName ?? '',
+              role: role,
+              createdAt: DateTime.now(), // approximation
+            );
+          }
+        }
+        notifyListeners();
+      }
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint('Error fetching user data: $e');
     }
   }
 
@@ -56,13 +67,12 @@ class AuthProvider with ChangeNotifier {
     try {
       final user = await _authService.signInWithEmail(email, password);
       if (user != null) {
-        // Since simplified AuthService doesn't return UserModel,
-        // we construct a basic one or handle it differently.
+        final role = await _authService.getUserRole(user.uid);
         _userModel = UserModel(
           uid: user.uid,
           email: user.email ?? '',
           name: user.displayName ?? '',
-          role: 'user', // Default role since it's no longer fetched
+          role: role ?? 'user',
           createdAt: DateTime.now(),
         );
       }
@@ -87,13 +97,17 @@ class AuthProvider with ChangeNotifier {
     try {
       final user = await _authService.registerWithEmail(email, password);
       if (user != null) {
-        _userModel = UserModel(
+        final newUser = UserModel(
           uid: user.uid,
           email: email,
           name: name,
           role: role,
           createdAt: DateTime.now(),
         );
+        // PERSIST TO FIRESTORE
+        await _authService.saveUserProfile(newUser);
+        _userModel = newUser;
+        notifyListeners();
       }
     } catch (e) {
       _isLoading = false;
@@ -109,5 +123,30 @@ class AuthProvider with ChangeNotifier {
     await _authService.signOut();
     _userModel = null;
     notifyListeners();
+  }
+
+  // Wrapper for Admin Create User
+  Future<void> createUserByAdmin(
+    String email,
+    String password,
+    String name, {
+    String role = 'user',
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _authService.createUserByAdmin(email, password, name, role: role);
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  // Ensure Default Admin
+  Future<void> ensureDefaultAdmin() async {
+    await _authService.ensureDefaultAdmin();
   }
 }
