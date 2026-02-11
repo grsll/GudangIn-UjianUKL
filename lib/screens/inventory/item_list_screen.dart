@@ -4,7 +4,6 @@ import '../../models/item_model.dart';
 import '../../providers/inventory_provider.dart';
 import 'item_detail_screen.dart';
 import 'item_form_screen.dart';
-import '../../utils/currency_formatter.dart'; // Need to create this
 
 class ItemListScreen extends StatelessWidget {
   final bool isAdmin;
@@ -64,13 +63,6 @@ class ItemListScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Kode: ${item.kodeBarang} | Stok: ${item.jumlahStok}',
-                          ),
-                          Text(
-                            CurrencyFormatter.format(item.harga),
-                            style: const TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.bold,
-                            ),
                           ),
                         ],
                       ),

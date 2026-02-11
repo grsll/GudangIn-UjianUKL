@@ -9,10 +9,6 @@ class ItemDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormatter = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-    );
     final dateFormatter = DateFormat('dd MMMM yyyy');
 
     return Scaffold(
@@ -55,7 +51,6 @@ class ItemDetailScreen extends StatelessWidget {
               title: 'Informasi Utama',
               children: [
                 _buildDetailRow('Kategori', item.kategori),
-                _buildDetailRow('Harga', currencyFormatter.format(item.harga)),
                 _buildDetailRow('Stok', '${item.jumlahStok} unit'),
                 _buildDetailRow(
                   'Tanggal Masuk',

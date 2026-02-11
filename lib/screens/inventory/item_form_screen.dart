@@ -20,7 +20,6 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
   late TextEditingController _namaController;
   late TextEditingController _kategoriController;
   late TextEditingController _stokController;
-  late TextEditingController _hargaController;
   late TextEditingController _deskripsiController;
   DateTime _selectedDate = DateTime.now();
 
@@ -41,9 +40,6 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
     _stokController = TextEditingController(
       text: widget.item?.jumlahStok.toString() ?? '',
     );
-    _hargaController = TextEditingController(
-      text: widget.item?.harga.toString() ?? '',
-    );
     _deskripsiController = TextEditingController(
       text: widget.item?.deskripsi ?? '',
     );
@@ -58,7 +54,6 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
     _namaController.dispose();
     _kategoriController.dispose();
     _stokController.dispose();
-    _hargaController.dispose();
     _deskripsiController.dispose();
     super.dispose();
   }
@@ -75,7 +70,6 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
           namaBarang: _namaController.text.trim(),
           kategori: _kategoriController.text.trim(),
           jumlahStok: int.parse(_stokController.text.trim()),
-          harga: double.parse(_hargaController.text.trim()),
           tanggalMasuk: _selectedDate,
           deskripsi: _deskripsiController.text.trim(),
           createdAt: widget.item?.createdAt ?? DateTime.now(),
@@ -155,15 +149,6 @@ class _ItemFormScreenState extends State<ItemFormScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Jumlah Stok',
                       ),
-                      keyboardType: TextInputType.number,
-                      validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _hargaController,
-                      decoration: const InputDecoration(labelText: 'Harga'),
                       keyboardType: TextInputType.number,
                       validator: (v) => v!.isEmpty ? 'Wajib diisi' : null,
                     ),
